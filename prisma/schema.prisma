@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+// ============================================================================
+// USERS TABLE
+// ============================================================================
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique @db.VarChar(255)
+  apiKey    String   @unique @map("api_key") @db.VarChar(64)
+  tier      UserTier @default(FREE)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  urls Url[]
+
+  @@index([apiKey])
+  @@map("users")
+}
+
+enum UserTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+// ============================================================================
+// URLS TABLE
+// ============================================================================
+model Url {
+  id          BigInt   @id @default(autoincrement())
+  shortCode   String   @unique @map("short_code") @db.VarChar(10)
+  originalUrl String   @map("original_url") @db.Text
+  isCustom    Boolean  @default(false) @map("is_custom")
+  isActive    Boolean  @default(true) @map("is_active")
+  clickCount  BigInt   @default(0) @map("click_count")
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  expiresAt   DateTime? @map("expires_at") @db.Timestamptz(3)
+  
+  // Foreign Keys
+  userId      String?  @map("user_id") @db.Uuid
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([shortCode])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@map("urls")
+}
