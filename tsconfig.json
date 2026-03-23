@@ -4,36 +4,33 @@
     "rootDir": "./src",
     "outDir": "./dist",
 
-    // Environment Settings for Node.js
+    // ES Module Settings (matches package.json "type": "module")
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "target": "ES2023",
-    "lib": ["ES2023"],
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    
+    // Node.js specific
     "types": ["node"],
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
 
-    // Other Outputs
+    // Output settings
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
 
-    // Stricter Typechecking
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-
-    // Recommended Options
+    // Strict checks
     "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    
+    // Module behavior
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "moduleDetection": "force"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "exclude": ["node_modules", "dist"]
 }
