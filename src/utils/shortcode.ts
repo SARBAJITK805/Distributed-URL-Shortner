@@ -1,5 +1,6 @@
 import pkg from "snowflake-id";
-import { encode,decode } from "./base62.js";
+import { encode } from "./base62.js";
+import prisma from "../lib/prisma.js";
 
 const SnowflakeId = (pkg as any).default;
 
@@ -8,21 +9,36 @@ const snowflake = new SnowflakeId({
     offset: new Date("2019-01-01").getTime()
 });
 
+const RESERVED_WORDS = [
+    "api", "admin", "health", "docs", "metrics",
+    "test", "demo", "login", "signup", "logout",
+    "dashboard", "settings", "help", "about", "contact"
+];
 
-export function generateShortCode():string{
-    const id=BigInt(snowflake.generate());
-    const encoded=encode(id);
-    return encoded;
+function isReserved(code: string): boolean {
+    return RESERVED_WORDS.includes(code.toLowerCase());
 }
 
-
-// const id = snowflake.generate();
-// console.log(typeof BigInt(id));
-
-// const encoded = encode(BigInt(id));
-// const decoded = decode(encoded);
-
-// console.log("Original ID:", id);
-// console.log("Encoded:", encoded);
-// console.log("Decoded:", decoded);
-// console.log("Match?", id === String(decoded));
+export async function generateShortCode(): Promise<string> {
+    let tries = 0;
+    const MAX_TRIES = 7;
+    
+    let id = BigInt(snowflake.generate());
+    let encoded = encode(id);
+    
+    while (tries < MAX_TRIES) {
+        const url = await prisma.url.findFirst({
+            where: { shortCode: encoded }
+        });
+        
+        if (url == null && !isReserved(encoded)) {
+            return encoded;
+        }
+        
+        id = BigInt(snowflake.generate());
+        encoded = encode(id);
+        tries++;
+    }
+    
+    throw new Error("Failed to generate unique short code");
+}
